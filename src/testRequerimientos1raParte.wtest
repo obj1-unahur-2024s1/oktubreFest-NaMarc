@@ -1,0 +1,117 @@
+import cervezas.*
+import personas.*
+import carpas.*
+
+describe "test- Requerimientos 1era Parte" {
+	// objetos cervezas
+	const quilmes = new Rubia(graduacionAlcohol = 4.8, lupulo = 4, paisOrigen = "Argentina", precioPorLitro = 5)
+	const stella = new Rubia(graduacionAlcohol = 10, lupulo = 3, paisOrigen = "Alemania", precioPorLitro = 10)
+	const stellaNoir = new Negra(lupulo = 6, paisOrigen = "Alemania", precioPorLitro = 15)
+	const chimay = new Roja(lupulo = 8, paisOrigen = "Belgica", precioPorLitro = 20)
+	//obejetos carpa
+	const carpa1 = new Carpa(capacidadPersonas = 2, bandaDeMusica = false, cerveza = quilmes, recargo = recargoFijo)
+	const carpa2 = new Carpa(capacidadPersonas = 3, bandaDeMusica = true, cerveza = stellaNoir, recargo = recargoPorCantidad)
+	const carpa3 = new Carpa(capacidadPersonas = 4, bandaDeMusica = true, cerveza = chimay, recargo = recargoPorEbriedad)
+	const carpa4 = new Carpa(capacidadPersonas = 6, bandaDeMusica = true, cerveza = quilmes, recargo = recargoPorEbriedad)
+	const carpa5 = new Carpa(capacidadPersonas = 5, bandaDeMusica = false, cerveza = stella, recargo = recargoFijo)
+	const carpa6 = new Carpa(capacidadPersonas = 7, bandaDeMusica = false, cerveza = chimay, recargo = recargoPorCantidad)
+	// objetos jarras
+	const jarraQ  = new Jarra(capacidad = 1, cerveza = quilmes, carpa = carpa1)
+	const jarraSN  = new Jarra(capacidad = 0.5, cerveza = stellaNoir, carpa = carpa2)
+	const jarraS  = new Jarra(capacidad = 1, cerveza = stella, carpa = carpa3)
+	const jarraC  = new Jarra(capacidad = 1, cerveza = chimay, carpa = carpa4)
+	const jarraSN2  = new Jarra(capacidad = 1, cerveza = stellaNoir, carpa = carpa2)
+	const jarraS2  = new Jarra(capacidad = 0.5, cerveza = stella, carpa = carpa6)
+	//objetos personas
+	const belga = new Belga(peso = 95, escuchaMusicaTradicional = true, nivelAguante = 9, nacionalidad = "Bélgica")
+	const aleman = new Aleman(peso = 100, escuchaMusicaTradicional = true, nivelAguante = 10, nacionalidad = "Alemania")
+	const checo = new Checo(peso = 86, escuchaMusicaTradicional = false, nivelAguante = 8, nacionalidad = "Checoslovaquia")
+	const belga2 = new Belga(peso = 80, escuchaMusicaTradicional = false, nivelAguante = 7, nacionalidad = "Bélgica")
+	const aleman2 = new Aleman(peso = 96, escuchaMusicaTradicional = true, nivelAguante = 10, nacionalidad = "Alemania")
+	const checo2 = new Checo(peso = 75, escuchaMusicaTradicional = true, nivelAguante = 8, nacionalidad = "Checoslovaquia")
+	
+	test "saber contenido de alcohol de una jarrade cada cerveza" {
+
+		assert.equals(0.048,jarraQ.contenidoAlcohol())
+		assert.equals(0.024,jarraSN.contenidoAlcohol())
+		assert.equals(0.1,jarraS.contenidoAlcohol())
+		assert.equals(0.06,jarraC.contenidoAlcohol())
+	}
+	test "contenido de acochol que ingirieron las personas y si está ebria"{
+		
+		aleman.comprarJarra(jarraQ)
+		aleman.comprarJarra(jarraSN)
+		aleman.comprarJarra(jarraC)
+		
+		assert.equals(0.132,aleman.alcoholQueIngirio())
+		assert.that(aleman.estaEbria())
+	}
+	test "saber si a una persona le gusta una determinada cerveza"{
+		
+		assert.notThat(belga.cervezaQueLeGusta(quilmes))
+		assert.that(belga.cervezaQueLeGusta(stellaNoir))
+		assert.notThat(checo.cervezaQueLeGusta(quilmes))
+		assert.that(checo.cervezaQueLeGusta(stella))
+	}
+	test "saber si una persona quiere entrar a una carpa"{
+		//aleman
+		assert.notThat(aleman.quiereEntrar(carpa2))
+		assert.that(aleman.quiereEntrar(carpa3))
+		//belga
+		assert.notThat(belga.quiereEntrar(carpa1))
+		assert.that(belga.quiereEntrar(carpa2))
+		//checo
+		assert.notThat(checo.quiereEntrar(carpa1))
+		assert.notThat(checo.quiereEntrar(carpa2))
+	}
+	test "Saber si una carpa deja ingresar a una persona"{
+		
+		assert.that(carpa3.dejaIngresar(aleman))
+	}
+	test "Saber si una carpa no deja ingresar a una persona por estar ebria"{
+		aleman.comprarJarra(jarraQ)
+		aleman.comprarJarra(jarraSN)
+		aleman.comprarJarra(jarraC)
+		
+		assert.notThat(carpa3.dejaIngresar(aleman))
+	}
+	test "Saber si una persona puede ingresar a una carpa"{
+		aleman2.ingresarCarpa(carpa3)
+		
+		assert.equals([aleman2],carpa3.personasDentro())
+	}
+	test "Una persona no quiere entrar a una carpa porque no le gusta la música"{
+		assert.throwsExceptionWithMessage("A la persona no le gusta la musica de la carpa", {checo2.ingresarCarpa(carpa5)})
+		
+	}
+	test "Una persona no quiere entar porque no le gusta la cerveza de la carpa"{
+		assert.throwsExceptionWithMessage("A la persona no le gusta la cerveza de la carpa", {belga2.ingresarCarpa(carpa1)})
+	}
+	test "Una persona no puede entar a la carpa porque está llena"{
+		belga.ingresarCarpa(carpa2)
+		belga.ingresarCarpa(carpa2)
+		belga.ingresarCarpa(carpa2)
+		
+		assert.throwsExceptionWithMessage("La carpa está llena", {belga.ingresarCarpa(carpa2)})
+	}
+	test "Una persona no puede entar a la carpa porque está ebrio"{
+		aleman.comprarJarra(jarraQ)
+		aleman.comprarJarra(jarraSN)
+		aleman.comprarJarra(jarraC)
+		
+		assert.throwsExceptionWithMessage("La persona está ebria", {aleman.ingresarCarpa(carpa3)})
+	}
+
+	test "comparar de que cerveza compraron las jarras"{
+		aleman.comprarJarra(jarraQ)
+		aleman.comprarJarra(jarraSN)
+		aleman.comprarJarra(jarraC)
+		
+		belga.comprarJarra(jarraQ)
+		belga.comprarJarra(jarraS)
+		belga.comprarJarra(jarraSN)
+		
+		assert.that(aleman.esCompatible(belga))
+	}
+	
+}
